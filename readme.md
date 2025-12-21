@@ -2,6 +2,12 @@
 
 一个 **Cloudflare IP 优选**工具：用**递进式蒙特卡罗 + 多头分散搜索（multi-head + beam）**在更少探测次数下，从 IPv4/IPv6 网段里找到更快/更稳定的 IP。
 
+IPv4 和 IPv6 的推荐命令分别为
+```bash
+go run ./cmd/mcis --budget 500 --concurrency 50 --heads 8 --beam 32 -v --out text --sni example.com --host-header example.com --cidr-file .\ipv4cidr.txt
+go run ./cmd/mcis --budget 1000 --concurrency 50 --heads 10 --beam 32 -v --out text --sni example.com --host-header example.com --cidr-file .\ipv6-cidr.txt
+```
+
 ## 特色
 
 - **递进式搜索**：不是全段扫描，而是对表现更好的子网逐步“下钻拆分”，把预算集中到更有潜力的区域。
