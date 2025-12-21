@@ -114,8 +114,8 @@ go build -o mcis.exe .\cmd\mcis
 - `--split-step-v4`：IPv4 下钻时前缀长度增加步长（例如 `/16 -> /18` 用 `2`）
 - `--split-step-v6`：IPv6 下钻时前缀长度增加步长（例如 `/32 -> /36` 用 `4`）
 - `--max-bits-v4` / `--max-bits-v6`：限制下钻到的最细前缀
-- `--sni`：TLS SNI（默认 `one.one.one.one`）
-- `--host-header`：HTTP Host（默认 `one.one.one.one`）
+- `--sni`：TLS SNI（默认 `example.com`）
+- `--host-header`：HTTP Host（默认 `example.com`）
 - `--path`：请求路径（默认 `/cdn-cgi/trace`）
 - `--out`：输出格式 `jsonl|csv|text`
 - `--out-file`：输出到文件（默认 stdout）
@@ -140,7 +140,7 @@ go build -o mcis.exe .\cmd\mcis
 - 本地网络/防火墙拦截
 - 目标 IP 不支持当前 `--sni/--host-header/--path` 组合
 
-建议先把 `--timeout` 调大一点，并尝试使用默认参数（`one.one.one.one` + `/cdn-cgi/trace`）。
+建议先把 `--timeout` 调大一点，并尝试使用默认参数（`example.com` + `/cdn-cgi/trace`）。
 
 ## License
 
