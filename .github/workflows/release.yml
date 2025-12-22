@@ -17,7 +17,7 @@ jobs:
     - uses: wangyoucao577/go-release-action@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        goos: linux darwin windows
-        goarch: amd64 arm64
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
         project_path: ./cmd/mcis
         extra_files: readme.md ipv4cidr.txt ipv6-cidr.txt
