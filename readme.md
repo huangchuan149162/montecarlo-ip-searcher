@@ -37,26 +37,6 @@ go run ./cmd/mcis --budget 2000 --concurrency 100 --heads 10 --beam 32 -v --out 
 - **探测方式**：默认对 `https://<ip>/cdn-cgi/trace` 发起请求（可自定义 `--sni` / `--host-header` / `--path`）。
 - **输出格式**：支持 `jsonl` / `csv` / `text`。
 
-## 环境要求
-
-- Go 1.25+
-- 可访问 Cloudflare（探测需要能建立到目标 IP 的 TLS 连接）
-
-## 安装 / 构建
-
-在仓库根目录：
-
-```bash
-go test ./...
-go build -o mcis ./cmd/mcis
-```
-
-Windows PowerShell 也可以直接：
-
-```powershell
-go build -o mcis.exe .\cmd\mcis
-```
-
 ## 快速开始
 
 ### 1）用单个 CIDR（IPv4）
@@ -76,6 +56,41 @@ go build -o mcis.exe .\cmd\mcis
 ```bash
 ./mcis --cidr-file cidrs.txt --budget 2000 --concurrency 200 --heads 4 --beam 32 -v --out csv --out-file result.csv
 ```
+
+## 参数详解
+
+- `--cidr`：输入 CIDR（可重复）
+- `--cidr-file`：从文件读取 CIDR
+- `--budget`：总探测次数（越大越稳，但更耗时）
+- `--concurrency`：并发探测数量
+- `--top`：输出 Top N IP
+- `--timeout`：单次探测超时（如 `2s` / `3s`）
+- `--heads`：多头数量（分散探索）
+- `--beam`：每个 head 保留的候选前缀数量（越大越“发散”）
+- `--min-samples-split`：前缀至少采样多少次才允许下钻拆分
+- `--split-step-v4`：IPv4 下钻时前缀长度增加步长（例如 `/16 -> /18` 用 `2`）
+- `--split-step-v6`：IPv6 下钻时前缀长度增加步长（例如 `/32 -> /36` 用 `4`）
+- `--max-bits-v4` / `--max-bits-v6`：限制下钻到的最细前缀
+- `--sni`：TLS SNI（默认 `example.com`）
+- `--host-header`：HTTP Host（默认 `example.com`）
+- `--path`：请求路径（默认 `/cdn-cgi/trace`）
+- `--out`：输出格式 `jsonl|csv|text`
+- `--out-file`：输出到文件（默认 stdout）
+- `--seed`：随机种子（0 表示使用时间种子）
+- `-v`：输出进度到 stderr
+
+### 下载速度测试参数（对前几名 IP 测速）
+
+搜索结束后，可对排名靠前的 IP 进行**下载速度测试**（默认 URL：`https://speed.cloudflare.com/__down?bytes=50000000`）。
+
+- `--download-top`：对 Top N IP 进行测速（默认 5，设为 0 关闭）
+- `--download-bytes`：下载大小（默认 50000000 字节）
+- `--download-timeout`：单个 IP 下载测速超时（默认 45s）
+
+提示：
+
+- 下载测速会消耗明显流量与时间（50MB/个 IP），建议先用小 N 验证。
+- 本项目同样会**强制直连**并忽略代理环境变量，避免测速被代理扭曲。
 
 ## 项目自带网段（bgp.he.net 高可见度）
 
@@ -127,41 +142,6 @@ go build -o mcis.exe .\cmd\mcis
 
 包含常用字段列，适合直接导入表格分析。
 
-## 参数详解
-
-- `--cidr`：输入 CIDR（可重复）
-- `--cidr-file`：从文件读取 CIDR
-- `--budget`：总探测次数（越大越稳，但更耗时）
-- `--concurrency`：并发探测数量
-- `--top`：输出 Top N IP
-- `--timeout`：单次探测超时（如 `2s` / `3s`）
-- `--heads`：多头数量（分散探索）
-- `--beam`：每个 head 保留的候选前缀数量（越大越“发散”）
-- `--min-samples-split`：前缀至少采样多少次才允许下钻拆分
-- `--split-step-v4`：IPv4 下钻时前缀长度增加步长（例如 `/16 -> /18` 用 `2`）
-- `--split-step-v6`：IPv6 下钻时前缀长度增加步长（例如 `/32 -> /36` 用 `4`）
-- `--max-bits-v4` / `--max-bits-v6`：限制下钻到的最细前缀
-- `--sni`：TLS SNI（默认 `example.com`）
-- `--host-header`：HTTP Host（默认 `example.com`）
-- `--path`：请求路径（默认 `/cdn-cgi/trace`）
-- `--out`：输出格式 `jsonl|csv|text`
-- `--out-file`：输出到文件（默认 stdout）
-- `--seed`：随机种子（0 表示使用时间种子）
-- `-v`：输出进度到 stderr
-
-### 下载速度测试参数（对前几名 IP 测速）
-
-搜索结束后，可对排名靠前的 IP 进行**下载速度测试**（默认 URL：`https://speed.cloudflare.com/__down?bytes=50000000`）。
-
-- `--download-top`：对 Top N IP 进行测速（默认 5，设为 0 关闭）
-- `--download-bytes`：下载大小（默认 50000000 字节）
-- `--download-timeout`：单个 IP 下载测速超时（默认 45s）
-
-提示：
-
-- 下载测速会消耗明显流量与时间（50MB/个 IP），建议先用小 N 验证。
-- 本项目同样会**强制直连**并忽略代理环境变量，避免测速被代理扭曲。
-
 ## 代理/直连说明（重要）
 
 本工具探测时**强制直连**：即使你设置了环境变量（如 `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY`），也不会生效。
@@ -181,6 +161,23 @@ go build -o mcis.exe .\cmd\mcis
 - 目标 IP 不支持当前 `--sni/--host-header/--path` 组合
 
 建议先把 `--timeout` 调大一点，并尝试使用默认参数（`example.com` + `/cdn-cgi/trace`）。
+
+## 构建
+
+Go 1.25+
+
+在仓库根目录：
+
+```bash
+go test ./...
+go build -o mcis ./cmd/mcis
+```
+
+Windows PowerShell 也可以直接：
+
+```powershell
+go build -o mcis.exe .\cmd\mcis
+```
 
 ## License
 
