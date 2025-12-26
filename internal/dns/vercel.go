@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/netip"
 	"net/url"
+	"strings"
 )
 
 const vercelAPIBase = "https://api.vercel.com"
@@ -103,22 +104,13 @@ func (p *VercelProvider) CreateRecords(ctx context.Context, subdomain string, ip
 func (p *VercelProvider) buildURL(path string) string {
 	u := vercelAPIBase + path
 	if p.teamID != "" {
-		if contains(u, "?") {
+		if strings.Contains(u, "?") {
 			u += "&teamId=" + url.QueryEscape(p.teamID)
 		} else {
 			u += "?teamId=" + url.QueryEscape(p.teamID)
 		}
 	}
 	return u
-}
-
-func contains(s, substr string) bool {
-	for i := 0; i+len(substr) <= len(s); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }
 
 func (p *VercelProvider) listRecords(ctx context.Context) ([]vercelDNSRecord, error) {
@@ -228,4 +220,3 @@ func (p *VercelProvider) createRecord(ctx context.Context, name, recordType, val
 
 	return nil
 }
-
